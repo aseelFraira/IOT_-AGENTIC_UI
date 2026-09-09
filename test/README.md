@@ -21,10 +21,10 @@ board, not just the terminal — prompts are shown on the TFT itself.
 
 | Suite | Tests | Result |
 |---|---|---|
-| `test_display_init` | 3 | ✅ 3/3 passed |
-| `test_display_draw` | 3 | ✅ 3/3 passed |
-| `test_touch` | 3 | ⚠️ 2/3 passed — `test_touch_repeatability` failed |
-| `test_ui_buttons` | 2 | ✅ 2/2 passed |
+| `test_display_init` | 3 | 3/3 passed |
+| `test_display_draw` | 3 | 3/3 passed |
+| `test_touch` | 3 | 2/3 passed — `test_touch_repeatability` failed |
+| `test_ui_buttons` | 2 | 2/2 passed |
 
 ## test_display_init
 
@@ -88,14 +88,3 @@ that only the touched button's color actually changed.
 
 **Result: PASS (2/2).** Touched button A at screen coordinate (30, 57),
 correctly identified and highlighted.
-
-## Why these aren't unit tests
-
-These exercise real SPI transactions against real silicon — the
-display driver, the touch controller, the wiring, the soldering are
-all part of what's "under test." There's no isolated unit and nothing
-is mocked; a unit test would mock exactly the hardware interaction this
-suite exists to verify. That also means failures here can come from
-sources a unit test never sees: a loose connection, a clone chip's
-quirks, calibration drift, or (as above) human finger placement, not
-just logic bugs.
