@@ -13,6 +13,7 @@
 #include <Arduino.h>
 #include <unity.h>
 #include <TFT_eSPI.h>
+#include <touch_calibration.h>
 
 static TFT_eSPI tft = TFT_eSPI();
 
@@ -181,19 +182,10 @@ void setup() {
     delay(2000);
     tft.begin();
 
-    // TFT_eSPI ships with generic default touch calibration constants
-    // that assume a specific touch-panel-to-display axis mapping. That
-    // assumption doesn't hold for every board, and when it's wrong,
-    // getTouch() maps a real touch to a completely different on-screen
-    // location (not "garbage", just mis-mapped). Running the library's
-    // own interactive calibration here derives the correct mapping for
-    // THIS board at its current rotation, instead of guessing.
-    showPrompt("CALIBRATE", "TOUCH");
-    delay(1000);
-    uint16_t calData[5];
-    tft.calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
-    Serial.printf("Touch calibration data: {%u, %u, %u, %u, %u}\n",
-                  calData[0], calData[1], calData[2], calData[3], calData[4]);
+    // TFT_eSPI's default touch calibration doesn't match this board, so a
+    // real touch can land on the wrong on-screen spot. Calibrate once
+    // (4 corner taps); the result is saved in flash and reused on later runs.
+    loadOrCalibrateTouch(tft);
 
     UNITY_BEGIN();
     RUN_TEST(test_idle_no_touch);

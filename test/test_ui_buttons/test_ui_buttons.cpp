@@ -15,6 +15,7 @@
 #include <Arduino.h>
 #include <unity.h>
 #include <TFT_eSPI.h>
+#include <touch_calibration.h>
 
 static TFT_eSPI tft = TFT_eSPI();
 
@@ -159,23 +160,8 @@ void setup() {
     tft.begin();
     tft.setRotation(0);
 
-    // See test_touch.cpp for why this is needed: the library's default
-    // touch calibration constants assume an axis mapping that doesn't
-    // match every board, so a real touch can land on the wrong on-
-    // screen spot unless we calibrate for this specific board/rotation.
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(2);
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString("CALIBRATE TOUCH", tft.width() / 2, tft.height() / 2);
-    tft.setTextDatum(TL_DATUM);
-    tft.setTextSize(1);
-    delay(1500);
-
-    uint16_t calData[5];
-    tft.calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
-    Serial.printf("Touch calibration data: {%u, %u, %u, %u, %u}\n",
-                  calData[0], calData[1], calData[2], calData[3], calData[4]);
+    // See test_touch.cpp: calibrate once, then reuse the value saved in flash.
+    loadOrCalibrateTouch(tft);
 
     UNITY_BEGIN();
     RUN_TEST(test_buttons_render_at_known_positions);
