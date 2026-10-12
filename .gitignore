@@ -1,3 +1,7 @@
 .pio/
 .vscode/
 ESP32/SECRETS.h
+.env
+tools/ui_generator/last_rejected.cpp
+tools/ui_generator/runs/
+__pycache__/

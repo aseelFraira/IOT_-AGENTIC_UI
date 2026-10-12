@@ -1,10 +1,12 @@
-// Smallest LVGL UI: one button and one label. Pressing the button counts up.
-// LVGL 8.3 + TFT_eSPI display + XPT2046 touch (calibration from touch_calibration.h).
+// Fixed firmware: owns the hardware (display, touch, LVGL). The UI itself lives
+// in generated_ui.cpp, which tools/ui_generator rewrites. Never put UI code here.
 
 #include <Arduino.h>
 #include <lvgl.h>
 #include <TFT_eSPI.h>
 #include <touch_calibration.h>
+#include "generated_ui.h"
+#include "test_hooks.h"
 
 static TFT_eSPI tft = TFT_eSPI();
 
@@ -35,13 +37,6 @@ static void touch_cb(lv_indev_drv_t *, lv_indev_data_t *data) {
     }
 }
 
-static lv_obj_t *label;
-
-static void button_cb(lv_event_t *) {
-    static int count = 0;
-    lv_label_set_text_fmt(label, "Pressed: %d", ++count);
-}
-
 void setup() {
     tft.begin();
     tft.setRotation(0);
@@ -64,26 +59,21 @@ void setup() {
     indev_drv.read_cb = touch_cb;
     lv_indev_drv_register(&indev_drv);
 
-    label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Pressed: 0");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, -40);
-
-    lv_obj_t *btn = lv_btn_create(lv_scr_act());
-    lv_obj_set_size(btn, 120, 50);
-    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 20);
-    lv_obj_add_event_cb(btn, button_cb, LV_EVENT_CLICKED, nullptr);
-
-    lv_obj_t *btn_label = lv_label_create(btn);
-    lv_label_set_text(btn_label, "Press me");
-    lv_obj_center(btn_label);
+    test_hooks_init();
+    generated_ui_create();
 }
 
-void loop() {
+void lvgl_pump(void) {
     static uint32_t lastTick = millis();
     uint32_t now = millis();
     lv_tick_inc(now - lastTick);
     lastTick = now;
 
     lv_timer_handler();
+}
+
+void loop() {
+    lvgl_pump();
+    test_hooks_poll();
     delay(5);
 }
